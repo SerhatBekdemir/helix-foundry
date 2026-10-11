@@ -34,7 +34,7 @@ export async function prepareProvider(
     1000,
   );
   try {
-    if (settings.provider === "local") {
+    if (settings.provider === "local" && settings.localRuntime !== "llamacpp") {
       let installed = false;
       if (settings.model === "qwen3:4b") {
         try {

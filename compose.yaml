@@ -12,6 +12,8 @@ x-app: &app
     HELIX_URL: http://helix:8080
     EXECUTOR_URL: http://executor:3002
     OLLAMA_URL: ${MODEL_ENDPOINT:-http://ollama:11434}
+    LOCAL_RUNTIME: ${LOCAL_RUNTIME:-ollama}
+    LOCAL_MODEL: ${LOCAL_MODEL:-qwen3:4b}
     # How long the model stays in memory after a question (Ollama keep_alive).
     MODEL_KEEP_ALIVE: ${MODEL_KEEP_ALIVE:-30s}
     INLINE_WORKER: "false"

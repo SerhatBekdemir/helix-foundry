@@ -374,6 +374,9 @@ export async function suggestOntology(
       bAlt = B.ds.alt.has(B.name),
       aOwn = !A.field && A.ds.key === A.name,
       aKey = aOwn || (!A.field && A.ds.alt.has(A.name));
+    // Genesis IDs and names are app-local; only declared mappings may create links.
+    if (!isDeclared && (A.ds.source === "genesis" || B.ds.source === "genesis"))
+      continue;
     // Targets are a table's own key (or an alternate email/code key), which drops
     // transitive overlap such as invoices.customer_id -> subscriptions.customer_id.
     if (

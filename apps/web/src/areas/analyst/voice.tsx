@@ -16,7 +16,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../api";
+import { api, basePath } from "../../api";
 import { cx } from "../../kit";
 import { chatListKey } from "./launcher";
 import { analystPaths } from "./paths";
@@ -288,7 +288,7 @@ export function VoiceProvider({
         c.close(graceful);
         if (c.sessionId)
           void fetch(
-            `/api/v1/workspaces/${workspaceId}/live/sessions/${encodeURIComponent(c.sessionId)}`,
+            `${basePath}/api/v1/workspaces/${workspaceId}/live/sessions/${encodeURIComponent(c.sessionId)}`,
             { method: "DELETE", credentials: "same-origin", keepalive: true },
           ).catch(() => {});
       }

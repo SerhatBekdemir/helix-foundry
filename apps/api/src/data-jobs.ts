@@ -47,6 +47,22 @@ export async function runSyncJob(store: Store, scope: string, job: Resource) {
     job.id,
   );
   await transaction(store, scope, async (tx) => {
+    if (imported.provenance) {
+      const dataset = await tx.get(ds.id);
+      const version = await tx.get(
+        ds.data.pendingVersion || ds.data.activeVersion,
+      );
+      if (dataset && !dataset.data.pendingVersion)
+        tx.put({
+          ...dataset,
+          description: dataset.data.manualDescription
+            ? dataset.description
+            : String(imported.provenance.description),
+          data: { ...dataset.data, genesis: imported.provenance },
+        });
+      if (version)
+        tx.update(version, { ...version.data, genesis: imported.provenance });
+    }
     const s = await tx.get(source.id);
     if (s && s.data.secret === source.data.secret)
       tx.update(s, {

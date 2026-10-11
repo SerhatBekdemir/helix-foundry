@@ -1,3 +1,4 @@
+import { basePath } from "./api";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { paths } from "./paths";
@@ -30,6 +31,7 @@ const choices = [
 ];
 // Business apps connected with an API key, shown beside the database hosts.
 const appChoices = [
+  ["genesis", "Genesis apps", "Authorized local snapshots across six apps"],
   ["stripe", "Stripe", "Customers and payments"],
   ["workos", "WorkOS", "Users and organizations"],
   ["posthog", "PostHog", "Product usage and events"],
@@ -159,7 +161,7 @@ export function ConnectData({
             icon={
               <img
                 className="connection-icon"
-                src={`/connectors/${provider}.svg`}
+                src={`${basePath}/connectors/${provider}.svg`}
                 alt=""
               />
             }
@@ -181,7 +183,7 @@ export function ConnectData({
             icon={
               <img
                 className="connection-icon"
-                src={`/connectors/${value}.svg`}
+                src={`${basePath}/connectors/${value}.svg`}
                 alt=""
               />
             }
@@ -226,8 +228,8 @@ export function ConnectData({
                     }
                     src={
                       value === "mysql"
-                        ? "/connectors/mysql-wordmark.svg"
-                        : `/connectors/${value === "postgres" ? "postgresql" : value}.svg`
+                        ? basePath + "/connectors/mysql-wordmark.svg"
+                        : `${basePath}/connectors/${value === "postgres" ? "postgresql" : value}.svg`
                     }
                     alt=""
                   />

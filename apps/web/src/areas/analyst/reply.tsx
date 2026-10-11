@@ -263,11 +263,35 @@ function Answer({ run }: { run: Resource }) {
   const { role } = useWorkspace();
   const a = run.data.answer,
     rows: Record<string, unknown>[] = a.rows || [],
-    citations: { datasetId: string; name: string; version?: string }[] =
-      a.citations || [],
+    citations: {
+      datasetId: string;
+      name: string;
+      version?: string;
+      genesis?: {
+        app: string;
+        environment: string;
+        capturedAt: string;
+        sourceUrl: string;
+        coverage: string;
+      };
+    }[] = a.citations || [],
     assumptions: string[] = a.assumptions || [];
   const total: number = typeof a.total === "number" ? a.total : rows.length;
   const names = [...new Set(citations.map((c) => c.name))];
+  const documents = [
+    ...new Map(
+      rows
+        .filter(
+          (r: any) =>
+            typeof r.title === "string" &&
+            typeof r.source_url === "string" &&
+            /^https:\/\/(academy|policyweb)(-dev)?\.(internal\.tmrw\.com|apps\.tmrw-cdn\.com)\/[a-z0-9/_-]+(?:#[a-z0-9_-]+)?$/.test(
+              r.source_url,
+            ),
+        )
+        .map((r: any) => [r.source_url, r]),
+    ).values(),
+  ];
   const count =
     total > rows.length
       ? `First ${formatNumber(rows.length)} of ${plural(total, "row")}`
@@ -340,21 +364,51 @@ function Answer({ run }: { run: Resource }) {
         </>
       )}
       <div className="an-foot">
+        {documents.length > 0 && (
+          <div className="an-sources">
+            <span className="an-foot-label">Documents</span>
+            {documents.map((d: any) => (
+              <a
+                key={d.source_url}
+                className="an-chip"
+                href={d.source_url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {d.title}
+              </a>
+            ))}
+          </div>
+        )}
         {citations.length > 0 && (
           <div className="an-sources">
             <span className="an-foot-label">Sources</span>
             {citations.map((c) => (
-              <Link
-                key={c.datasetId}
-                className="an-chip"
-                to={paths.dataset(c.datasetId)}
-                title={
-                  c.version ? `Snapshot ${c.version.slice(0, 8)}` : undefined
-                }
-              >
-                <Database size={12} aria-hidden />
-                {c.name}
-              </Link>
+              <span key={c.datasetId}>
+                <Link
+                  key={c.datasetId}
+                  className="an-chip"
+                  to={paths.dataset(c.datasetId)}
+                  title={
+                    c.version ? `Snapshot ${c.version.slice(0, 8)}` : undefined
+                  }
+                >
+                  <Database size={12} aria-hidden />
+                  {c.name}
+                </Link>
+                {c.genesis && (
+                  <a
+                    className="an-chip"
+                    href={c.genesis.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={c.genesis.coverage}
+                  >
+                    {c.genesis.app} · {c.genesis.environment} ·{" "}
+                    {new Date(c.genesis.capturedAt).toLocaleString()}
+                  </a>
+                )}
+              </span>
             ))}
           </div>
         )}

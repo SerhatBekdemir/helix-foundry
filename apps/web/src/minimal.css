@@ -1198,6 +1198,14 @@ td {
 .is-setup main {
   padding: 0;
 }
+.setup-workspace {
+  max-width: 680px;
+  margin: 24px auto 0;
+  padding: 0 20px;
+}
+.setup-workspace .hf-switcher {
+  max-width: 280px;
+}
 .setup-page {
   max-width: 760px;
   margin: 0 auto;

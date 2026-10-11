@@ -4,6 +4,63 @@ import { once } from "node:events";
 import { Provider } from "../apps/api/src/providers.js";
 import { ProviderSchema } from "../packages/shared/src/index.js";
 afterEach(() => vi.unstubAllGlobals());
+it("uses authenticated llama.cpp structured output and refuses truncated answers", async () => {
+  const requests: any[] = [];
+  let truncated = false;
+  const server = createServer(async (req, res) => {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    requests.push({
+      url: req.url,
+      authorization: req.headers.authorization,
+      body: JSON.parse(body),
+    });
+    res.end(
+      JSON.stringify({
+        choices: [
+          {
+            finish_reason: truncated ? "length" : "stop",
+            message: { content: '{"ready":true}' },
+          },
+        ],
+        usage: { total_tokens: 5 },
+      }),
+    );
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+  try {
+    const p = new Provider(
+      ProviderSchema.parse({
+        provider: "local",
+        localRuntime: "llamacpp",
+        model: "qwen3:4b",
+        apiKey: "test-only",
+        baseUrl: `http://127.0.0.1:${(server.address() as any).port}/v1/`,
+      }),
+    );
+    expect(await p.generate("system", {}, { type: "object" })).toEqual({
+      value: { ready: true },
+      tokens: 5,
+    });
+    expect(requests[0].url).toBe("/v1/chat/completions");
+    expect(requests[0].authorization).toBe("Bearer test-only");
+    expect(requests[0].body.response_format.type).toBe("json_schema");
+    expect(requests[0].body.response_format.json_schema.schema).toEqual({
+      type: "object",
+    });
+    expect(requests[0].body.chat_template_kwargs.enable_thinking).toBe(false);
+    truncated = true;
+    await expect(p.generate("system", {}, {})).rejects.toThrow(
+      "ran out of room",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  } finally {
+    server.close();
+  }
+});
 for (const provider of ["local", "claude", "openai"] as const)
   it(`uses the native ${provider} protocol without fallbacks`, async () => {
     const requests: any[] = [];

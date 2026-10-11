@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { api, relative, number } from "./api";
+import { api, basePath, relative, number } from "./api";
 import { paths } from "./paths";
 import {
   useWorkspace,
@@ -241,7 +241,7 @@ function DatasetDetail({
         <div className="buttons">
           <a
             className="button"
-            href={`/api/v1/workspaces/${id}/datasets/${d.id}/export`}
+            href={`${basePath}/api/v1/workspaces/${id}/datasets/${d.id}/export`}
           >
             Export Parquet
           </a>

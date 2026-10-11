@@ -49,6 +49,12 @@ function sameApp(origin: string) {
   try {
     const a = new URL(origin),
       b = new URL(config.origin);
+    if (
+      a.protocol === "http:" &&
+      isLoopback(a.hostname) &&
+      a.port === String(config.port)
+    )
+      return true;
     return (
       a.protocol === b.protocol &&
       a.port === b.port &&
@@ -62,6 +68,12 @@ function sameApp(origin: string) {
 const scrub = publicResource;
 export async function createApp(store: Store) {
   const app = Fastify({
+    rewriteUrl: (req) => {
+      const url = req.url || "/";
+      return /^\/tmrwhelix(?:\/|\?|$)/.test(url)
+        ? url.slice("/tmrwhelix".length) || "/"
+        : url;
+    },
     logger:
       process.env.NODE_ENV !== "test"
         ? {

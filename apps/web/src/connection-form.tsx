@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { api } from "./api";
+import { api, basePath } from "./api";
 import { useWorkspace, DataTable } from "./ui";
 import { useSetupAction } from "./setup-components";
 import { ConnectionGuide } from "./connection-guides";
@@ -38,6 +38,7 @@ export function ConnectionForm({
       stripe: stripeMode ? `Stripe (${stripeMode})` : "Stripe",
       workos: "WorkOS",
       posthog: "PostHog",
+      genesis: "Genesis apps",
     }[kind] || "";
   if (kind === "postgres" && !manualPostgres && form.connectionString) {
     try {
@@ -178,7 +179,7 @@ export function ConnectionForm({
               </button>
             </label>
           )}
-          <pre>{`POST ${location.origin}/api/v1/workspaces/${id}/ingest
+          <pre>{`POST ${location.origin}${basePath}/api/v1/workspaces/${id}/ingest
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 
@@ -188,7 +189,7 @@ Content-Type: application/json
             replacing that snapshot. Each ingest request creates a complete
             snapshot; it does not append.
           </p>
-          <a href="/api/docs" target="_blank" rel="noreferrer">
+          <a href={basePath + "/api/docs"} target="_blank" rel="noreferrer">
             API reference
           </a>
         </div>
@@ -371,6 +372,21 @@ Content-Type: application/json
                 </div>
               </details>
             </>
+          )}
+          {kind === "genesis" && (
+            <label className="span2">
+              Installed export bundle
+              <input
+                required
+                placeholder="genesis-prod"
+                value={form.bundle || ""}
+                onChange={(e) => update("bundle", e.target.value)}
+              />
+              <span className="muted">
+                Import authorized snapshots with source, capture time and
+                coverage.
+              </span>
+            </label>
           )}
           {kind === "rest" && (
             <>

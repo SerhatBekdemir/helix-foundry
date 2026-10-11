@@ -21,10 +21,11 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { api } from "./api";
+import { api, basePath } from "./api";
 import { WorkspaceContext, Loading, type AskContext } from "./ui";
 import { Button, SkeletonText, readStorage, writeStorage } from "./kit";
 import { Shell } from "./shell/Shell";
+import { WorkspaceSwitcher } from "./shell/Sidebar";
 import { LiveActivityProvider } from "./shell/live";
 import { VoiceProvider } from "./areas/analyst/voice";
 import {
@@ -219,6 +220,13 @@ function App() {
         <div className="app-shell is-setup">
           <div className="main-shell">
             <main key={selected.id}>
+              <div className="setup-workspace">
+                <WorkspaceSwitcher
+                  workspaces={me.data.workspaces}
+                  current={selected}
+                  onSwitch={setChosen}
+                />
+              </div>
               <Suspense fallback={<Loading />}>
                 <Onboarding />
               </Suspense>
@@ -302,7 +310,7 @@ const client = new QueryClient({
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
-      <BrowserRouter>
+      <BrowserRouter basename={basePath || "/"}>
         <App />
       </BrowserRouter>
     </QueryClientProvider>

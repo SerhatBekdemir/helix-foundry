@@ -1,3 +1,4 @@
+import { basePath } from "./api";
 import { useId, type CSSProperties, type ReactNode } from "react";
 import { Check, Database } from "lucide-react";
 import { number } from "./api";
@@ -43,7 +44,7 @@ const labels: Record<string, string> = {
   rest: "REST API",
 };
 export const connectorLogo = (key: string) =>
-  logos[key] ? `/connectors/${logos[key]}.svg` : undefined;
+  logos[key] ? `${basePath}/connectors/${logos[key]}.svg` : undefined;
 export const sourceName = (key: string) =>
   labels[key] || key.charAt(0).toUpperCase() + key.slice(1);
 

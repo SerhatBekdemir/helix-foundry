@@ -142,6 +142,7 @@ export function registerDataRoutes(
           activeVersion: v.id,
           pendingVersion: null,
           profile: v.data.profile,
+          ...(v.data.genesis ? { genesis: v.data.genesis } : {}),
         });
       });
     },

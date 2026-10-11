@@ -16,4 +16,10 @@ DATA_DIR=.data
 ENV
   echo 'Generated local secrets in .env'
 fi
-if [ "${1:-}" = "--compose" ]; then docker compose --profile local up -d --build; fi
+if [ "${1:-}" = "--compose" ]; then
+  if [ -n "$(sed -n 's/^MODEL_ENDPOINT=//p' .env)" ]; then
+    docker compose up -d --build
+  else
+    docker compose --profile local up -d --build
+  fi
+fi

@@ -1,3 +1,4 @@
+import { basePath } from "../../api";
 // Chat data for the Analyst: a chat is a question and its follow-ups, one
 // assistant run per turn. The chat list lives in ./launcher (shared with the
 // sidebar); this file holds one chat, its runs and how they read.
@@ -22,7 +23,7 @@ export const chatIdOf = (run: Pick<Resource, "id" | "data">) =>
 // GET that resolves to null on 404, so "not found" can be told apart from a
 // failed request.
 async function getOrNull<T>(path: string): Promise<T | null> {
-  const res = await fetch("/api/v1" + path, { credentials: "same-origin" });
+  const res = await fetch(basePath + "/api/v1" + path, { credentials: "same-origin" });
   if (res.status === 404) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || "Request failed");
@@ -35,7 +36,7 @@ export const fetchChat = (workspaceId: string, chatId: string) =>
 // Sent without a JSON content type: the API rejects an empty JSON body.
 export async function deleteChat(workspaceId: string, chatId: string) {
   const res = await fetch(
-    `/api/v1/workspaces/${workspaceId}/threads/${encodeURIComponent(chatId)}`,
+    `${basePath}/api/v1/workspaces/${workspaceId}/threads/${encodeURIComponent(chatId)}`,
     { method: "DELETE", credentials: "same-origin" },
   );
   const data = await res.json().catch(() => ({}));

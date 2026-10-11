@@ -16,7 +16,7 @@ import {
   Sun,
   X,
 } from "lucide-react";
-import { api } from "../api";
+import { api, basePath } from "../api";
 import {
   Button,
   Dialog,
@@ -317,7 +317,7 @@ function NavLinks({
   );
 }
 
-function WorkspaceSwitcher({
+export function WorkspaceSwitcher({
   workspaces,
   current,
   onSwitch,
@@ -458,7 +458,7 @@ function LocalMenu({ collapsed }: { collapsed: boolean }) {
       <MenuItem icon={Settings} to={paths.settings()}>
         Settings
       </MenuItem>
-      <MenuItem icon={BookOpen} href="/api/docs" external>
+      <MenuItem icon={BookOpen} href={basePath + "/api/docs"} external>
         API reference
       </MenuItem>
       <MenuSeparator />

@@ -223,6 +223,23 @@ it("names entities from their table", () => {
   expect(entityName("statuses")).toBe("Status");
 });
 
+it("does not infer Genesis identities from overlapping app-local IDs", async () => {
+  const { suggestion } = await suggestFor([
+    {
+      name: "hr_people",
+      kind: "genesis",
+      rows: [{ id: "same" }, { id: "other" }],
+    },
+    {
+      name: "academy_people",
+      kind: "genesis",
+      rows: [{ id: "same" }, { id: "other" }],
+    },
+  ]);
+  expect(suggestion.entities).toHaveLength(2);
+  expect(suggestion.links).toEqual([]);
+});
+
 it("builds valid pipelines, types and relationships from the suggestion", async () => {
   const datasets = new Map(input.datasets.map((d: any) => [d.id, d]));
   const edited = confirmOntology(suggestion, {

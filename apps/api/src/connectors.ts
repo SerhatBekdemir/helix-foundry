@@ -6,7 +6,7 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import { createWriteStream } from "node:fs";
-import { mkdir } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
 import { once } from "node:events";
 import { resolve } from "node:path";
@@ -17,6 +17,7 @@ import { postgresPoolConfig } from "./postgres-config.js";
 import { discoverStripe, importStripe } from "./stripe.js";
 import { discoverWorkos, importWorkos } from "./workos.js";
 import { discoverPosthog, importPosthog } from "./posthog.js";
+import { discoverGenesis, importGenesis } from "./genesis.js";
 export type ConnectorConfig = Record<string, any>;
 function mysqlPool(c: ConnectorConfig) {
   return mysql.createPool({
@@ -79,6 +80,7 @@ function headers(c: ConnectorConfig) {
     : {};
 }
 export async function discover(kind: string, c: ConnectorConfig) {
+  if (kind === "genesis") return discoverGenesis(c);
   if (kind === "mysql") {
     const pool = mysqlPool(c);
     try {
@@ -226,6 +228,7 @@ export async function importSource(
   file: string;
   records: number;
   schema?: { name: string; type: string }[];
+  provenance?: Record<string, unknown>;
 }> {
   await mkdir(resolve(config.dataDir, "incoming", scope), { recursive: true });
   const ext =
@@ -242,6 +245,7 @@ export async function importSource(
     out = createWriteStream(path);
   let count = 0;
   let schema: { name: string; type: string }[] | undefined;
+  let provenance: Record<string, unknown> | undefined;
   let lastProgress = 0;
   const write = async (row: any) => {
     if (Date.now() - lastProgress > 1000) {
@@ -263,7 +267,9 @@ export async function importSource(
       await once(out, "drain");
   };
   try {
-    if (kind === "mysql") {
+    if (kind === "genesis") {
+      ({ schema, provenance } = await importGenesis(c, write));
+    } else if (kind === "mysql") {
       assert(c.table, "Select a table");
       const pool = mysqlPool(c);
       try {
@@ -440,9 +446,15 @@ export async function importSource(
       message: "Profiling complete snapshot",
       records: count,
     });
-    return { file, records: count, schema: count === 0 ? schema : undefined };
+    return {
+      file,
+      records: count,
+      schema: count === 0 ? schema : undefined,
+      provenance,
+    };
   } catch (e) {
     out.destroy();
+    await rm(path, { force: true });
     throw e;
   }
 }

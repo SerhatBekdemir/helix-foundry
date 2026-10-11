@@ -81,9 +81,19 @@ export function registerOnboarding(
       const existing = m.providerJobId && (await tx.get(m.providerJobId));
       const selected = { ...settings };
       if (!selected.apiKey) {
-        if (existing?.data.settings?.provider === selected.provider)
+        if (
+          existing?.data.settings?.provider === selected.provider &&
+          (selected.provider !== "local" ||
+            (existing.data.settings.baseUrl === selected.baseUrl &&
+              existing.data.settings.localRuntime === selected.localRuntime))
+        )
           selected.apiKey = unseal(existing.data.secret).apiKey;
-        else if (selected.provider === old.provider)
+        else if (
+          selected.provider === old.provider &&
+          (selected.provider !== "local" ||
+            (old.baseUrl === selected.baseUrl &&
+              old.localRuntime === selected.localRuntime))
+        )
           selected.apiKey = old.apiKey;
       }
       assert(
@@ -163,7 +173,7 @@ export function registerOnboarding(
           ),
           "Choose tables from the tested connection",
         );
-      if (["stripe", "workos", "posthog"].includes(body.kind))
+      if (["stripe", "workos", "posthog", "genesis"].includes(body.kind))
         assert(
           discovery.tables?.some((t: any) => t.name === s.table),
           "Choose objects the API key can read",

@@ -40,6 +40,7 @@ function syncText(c: Card) {
   const s = c.source.data;
   if (s.paused) return "Paused";
   if (s.sync?.mode === "cdc") return "Live changes";
+  if (s.kind === "genesis" && !s.schedule) return "Manual snapshot refresh";
   return s.schedule
     ? `Scheduled refresh (${s.schedule} UTC)`
     : "Automatic refresh";

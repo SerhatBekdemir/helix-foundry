@@ -1,3 +1,8 @@
+export const basePath =
+  window.location.pathname === "/tmrwhelix" ||
+  window.location.pathname.startsWith("/tmrwhelix/")
+    ? "/tmrwhelix"
+    : "";
 export async function api<T = any>(
   path: string,
   body?: unknown,
@@ -5,7 +10,7 @@ export async function api<T = any>(
   extraHeaders?: Record<string, string>,
   options?: Pick<RequestInit, "keepalive">,
 ): Promise<T> {
-  const res = await fetch("/api/v1" + path, {
+  const res = await fetch(basePath + "/api/v1" + path, {
     ...options,
     credentials: "same-origin",
     method: method || (body === undefined ? "GET" : "POST"),

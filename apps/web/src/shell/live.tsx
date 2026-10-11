@@ -1,3 +1,4 @@
+import { basePath } from "../api";
 import {
   createContext,
   useContext,
@@ -60,7 +61,7 @@ export function LiveActivityProvider({
     seeded.current = false;
     lastReviews.current = 0;
     setState(empty);
-    const source = new EventSource(`/api/v1/workspaces/${workspaceId}/events`);
+    const source = new EventSource(`${basePath}/api/v1/workspaces/${workspaceId}/events`);
     source.onopen = () => setState((s) => ({ ...s, connected: true }));
     source.onerror = () => setState((s) => ({ ...s, connected: false }));
     source.onmessage = (e) => {

@@ -385,7 +385,12 @@ export function registerWorkspaceRoutes(
       s = ProviderSchema.parse(req.body);
     if (!s.apiKey) {
       const old = await providerSettings(store, a.scope);
-      if (old.provider === s.provider) s.apiKey = old.apiKey;
+      if (
+        old.provider === s.provider &&
+        (s.provider !== "local" ||
+          (old.baseUrl === s.baseUrl && old.localRuntime === s.localRuntime))
+      )
+        s.apiKey = old.apiKey;
     }
     await testProvider(s);
     await transaction(store, a.scope, async (tx) =>
@@ -408,6 +413,10 @@ export function registerWorkspaceRoutes(
     const a = await access(req, "owner"),
       s = await providerSettings(store, a.scope);
     assert(s.provider === "local", "Select local inference");
+    assert(
+      s.localRuntime !== "llamacpp",
+      "Manage llama.cpp models in your existing router; Foundry does not download them.",
+    );
     const result = await fetch((s.baseUrl || config.ollama) + "/api/pull", {
       method: "POST",
       headers: { "content-type": "application/json" },

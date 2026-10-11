@@ -15,6 +15,11 @@ export const config = {
   dataDir: resolve(process.env.DATA_DIR || ".data"),
   inlineWorker: process.env.INLINE_WORKER !== "false",
   ollama: process.env.OLLAMA_URL || "http://127.0.0.1:11434",
+  localRuntime:
+    process.env.LOCAL_RUNTIME === "llamacpp"
+      ? ("llamacpp" as const)
+      : ("ollama" as const),
+  localModel: process.env.LOCAL_MODEL || "qwen3:4b",
   // Ollama keep_alive: free the model's memory soon after a question instead
   // of after Ollama's default five minutes.
   modelKeepAlive: process.env.MODEL_KEEP_ALIVE || "30s",

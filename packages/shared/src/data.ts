@@ -6,6 +6,7 @@ import { z } from "zod";
 
 export const sourceKinds = [
   "upload",
+  "genesis",
   "postgres",
   "mysql",
   "rest",

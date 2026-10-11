@@ -3,7 +3,12 @@ import { localAiMemory } from "../apps/api/src/memory.js";
 const checks: [string, string][] = [
   ["HelixDB", config.helix + "/readyz"],
   ["DuckDB executor", config.executor + "/health"],
-  ["Local model", config.ollama + "/api/tags"],
+  [
+    "Local model",
+    config.localRuntime === "llamacpp"
+      ? config.ollama.replace(/\/?v1\/?$/, "") + "/health"
+      : config.ollama + "/api/tags",
+  ],
 ];
 let errors = 0;
 for (const [name, url] of checks) {

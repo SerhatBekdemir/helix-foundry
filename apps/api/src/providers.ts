@@ -24,7 +24,30 @@ export class Provider implements ModelProvider {
     let url: string,
       headers: Record<string, string> = { "content-type": "application/json" },
       body: any;
-    if (s.provider === "local") {
+    if (s.provider === "local" && s.localRuntime === "llamacpp") {
+      const base = (s.baseUrl || config.ollama).replace(/\/$/, "");
+      url = base + (base.endsWith("/v1") ? "" : "/v1") + "/chat/completions";
+      if (s.apiKey) headers.authorization = "Bearer " + s.apiKey;
+      body = {
+        model: s.model,
+        stream: false,
+        temperature: 0,
+        max_tokens: 8192,
+        chat_template_kwargs: { enable_thinking: false },
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "result",
+            schema: boundedLists(schema),
+            strict: true,
+          },
+        },
+      };
+    } else if (s.provider === "local") {
       url = (s.baseUrl || config.ollama).replace(/\/$/, "") + "/api/chat";
       // Size the window to the prompt (JSON averages ~2.8 characters per token)
       // and keep room for the answer, so long prompts are never silently cut.
@@ -95,12 +118,28 @@ export class Provider implements ModelProvider {
     if (s.provider === "local") {
       // Ollama sends no headers until it has read the whole prompt, which can
       // take longer than fetch allows on CPU-only installs.
-      const r = await postJson(url, JSON.stringify(body), abort);
+      const r = await postJson(url, JSON.stringify(body), abort, headers);
       assert(
         r.status >= 200 && r.status < 300,
         `local returned HTTP ${r.status}. Check the model, credentials, and provider quota.`,
         502,
       );
+      if (s.localRuntime === "llamacpp") {
+        const data = JSON.parse(r.text),
+          choice = data.choices?.[0];
+        assert(
+          choice?.finish_reason !== "length",
+          "The local model ran out of room for its answer.",
+        );
+        assert(
+          choice?.message?.content,
+          "Model did not return a structured response",
+        );
+        return {
+          value: withoutNullOptionals(JSON.parse(choice.message.content)),
+          tokens: data.usage?.total_tokens || 0,
+        };
+      }
       const data = ollamaResult(r.text);
       assert(
         data.done_reason !== "length",
@@ -195,7 +234,11 @@ function strictSchema(schema: any): any {
   return o;
 }
 export async function verifyPinnedModel(settings: ProviderSettings) {
-  if (settings.provider === "local" && settings.model === "qwen3:4b") {
+  if (
+    settings.provider === "local" &&
+    settings.localRuntime !== "llamacpp" &&
+    settings.model === "qwen3:4b"
+  ) {
     const r = await fetch((settings.baseUrl || config.ollama) + "/api/tags", {
       signal: AbortSignal.timeout(5000),
     });

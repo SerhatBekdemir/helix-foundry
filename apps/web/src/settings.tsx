@@ -13,7 +13,7 @@ import {
   Terminal,
 } from "lucide-react";
 import { useWorkspace, useAction, PageHeader } from "./ui";
-import { api } from "./api";
+import { api, basePath } from "./api";
 export default function SettingsPage() {
   const { id, role } = useWorkspace(),
     action = useAction(),
@@ -50,7 +50,7 @@ export default function SettingsPage() {
               <h3>
                 <Terminal size={18} /> Developer access
               </h3>
-              <a href="/api/docs" target="_blank">
+              <a href={basePath + "/api/docs"} target="_blank">
                 Open API docs ↗
               </a>
             </div>
@@ -117,7 +117,7 @@ export default function SettingsPage() {
               </p>
               <a
                 className="button"
-                href={`/api/v1/workspaces/${id}/definitions/export`}
+                href={`${basePath}/api/v1/workspaces/${id}/definitions/export`}
                 download="foundry-definitions.json"
               >
                 <Download size={15} /> Export definitions

@@ -222,7 +222,7 @@ export default function Onboarding() {
           <>
             <h1>Where is your data?</h1>
             <p className="setup-intro">
-              Choose a provider to connect your account.
+              Connect Genesis apps or upload local files. Cloud accounts are optional.
             </p>
             {providerError && (
               <div className="error-box" role="alert">

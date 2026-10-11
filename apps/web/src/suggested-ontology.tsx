@@ -1,3 +1,4 @@
+import { basePath } from "./api";
 import {
   useEffect,
   useId,
@@ -83,7 +84,7 @@ function SourceLogo({ source }: { source: string }) {
   return (
     <span className={`so-logo${source === "mysql" ? " is-wordmark" : ""}`}>
       {file ? (
-        <img src={`/connectors/${file}.svg`} alt="" />
+        <img src={`${basePath}/connectors/${file}.svg`} alt="" />
       ) : (
         <Icon size={11} aria-hidden />
       )}

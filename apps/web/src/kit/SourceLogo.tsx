@@ -1,3 +1,4 @@
+import { basePath } from "../api";
 import {
   Braces,
   Database,
@@ -110,7 +111,7 @@ export function SourceLogo({
       aria-label={showLabel ? undefined : label}
     >
       {file ? (
-        <img src={`/connectors/${file}.svg`} alt="" />
+        <img src={`${basePath}/connectors/${file}.svg`} alt="" />
       ) : (
         <Icon size={Math.round(size * 0.6)} aria-hidden />
       )}

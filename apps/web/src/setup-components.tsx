@@ -1,3 +1,4 @@
+import { basePath } from "./api";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle, Check, Monitor, ArrowRight } from "lucide-react";
@@ -187,11 +188,15 @@ export function ProviderSetup({
                   provider: value,
                   model:
                     value === "local"
-                      ? "qwen3:4b"
+                      ? q.data?.provider === "local"
+                        ? q.data.model
+                        : "qwen3:4b"
                       : value === "claude"
                         ? "claude-sonnet-4-6"
                         : "gpt-5.4-mini",
                   baseUrl: value === "local" ? q.data?.baseUrl : undefined,
+                  localRuntime:
+                    value === "local" ? q.data?.localRuntime : undefined,
                   apiKey: "",
                   hasKey: q.data?.provider === value && q.data?.hasKey,
                 })
@@ -202,7 +207,7 @@ export function ProviderSetup({
                 ) : (
                   <img
                     className="provider-logo"
-                    src={`/providers/${value}.svg`}
+                    src={`${basePath}/providers/${value}.svg`}
                     alt=""
                     aria-hidden="true"
                   />
@@ -228,13 +233,57 @@ export function ProviderSetup({
               </div>
             </div>
           )}
-        {s.provider !== "local" && (
+        {s.provider === "local" && (
+          <>
+            <label>
+              Local runtime
+              <select
+                value={s.localRuntime || "ollama"}
+                onChange={(e) =>
+                  setSettings({
+                    ...s,
+                    localRuntime: e.target.value,
+                    baseUrl: "",
+                    model: "",
+                    apiKey: "",
+                    hasKey: false,
+                  })
+                }
+              >
+                <option value="llamacpp">llama.cpp</option>
+                <option value="ollama">Ollama</option>
+              </select>
+            </label>
+            <label>
+              Model
+              <input
+                required
+                value={s.model}
+                onChange={(e) => update("model", e.target.value)}
+              />
+            </label>
+            <label>
+              Local endpoint
+              <input
+                type="url"
+                value={s.baseUrl || ""}
+                placeholder={
+                  s.localRuntime === "llamacpp"
+                    ? "http://localhost:8090/v1"
+                    : "http://localhost:11434"
+                }
+                onChange={(e) => update("baseUrl", e.target.value || undefined)}
+              />
+            </label>
+          </>
+        )}
+        {(s.provider !== "local" || s.localRuntime === "llamacpp") && (
           <label>
             API key
             <input
               type="password"
               autoComplete="off"
-              required={owner && !s.hasKey}
+              required={owner && s.provider !== "local" && !s.hasKey}
               placeholder={
                 s.hasKey
                   ? "Leave blank to keep your saved key"
